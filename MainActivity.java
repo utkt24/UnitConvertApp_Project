@@ -1,96 +1,125 @@
-package com.example.myquiz;
+package com.example.myconvertor;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    TextView totalQuestionsTextView;
-    TextView questionTextView;
-    Button ansA,ansB,ansC,ansD;
-    Button submitBtn;
-    int score = 0;
-    int totalQuestion = QuestionAnswer.question.length;
-    int currentQuestionIndex = 0;
-    String selectedAnswer = "";
+public class MainActivity extends AppCompatActivity {
+
+    EditText input;
+    Spinner unit;
+    TextView km, m, cm, mm, microm, nm, mile, yard, foot, inch;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        totalQuestionsTextView = findViewById(R.id.total_question);
-        questionTextView = findViewById(R.id.question);
-        ansA = findViewById(R.id.ans_A);
-        ansB = findViewById(R.id.ans_B);
-        ansC = findViewById(R.id.ans_C);
-        ansD = findViewById(R.id.ans_D);
-        submitBtn = findViewById(R.id.submit_btn);
-        ansA.setOnClickListener(this);
-        ansB.setOnClickListener(this);
-        ansC.setOnClickListener(this);
-        ansD.setOnClickListener(this);
-        submitBtn.setOnClickListener(this);
-        totalQuestionsTextView.setText("Total questions : "+totalQuestion);
-        loadNewQuestion();
-    }
 
+        input = findViewById(R.id.input);
+        unit = findViewById(R.id.unit);
+        km = findViewById(R.id.km);
+        m = findViewById(R.id.m);
+        cm = findViewById(R.id.cm);
+        mm = findViewById(R.id.mm);
+        microm = findViewById(R.id.microm);
+        nm = findViewById(R.id.nm);
+        mile = findViewById(R.id.mile);
+        yard = findViewById(R.id.yard);
+        foot = findViewById(R.id.foot);
+        inch = findViewById(R.id.inch);
 
+        String[] arr = {"km", "m", "cm", "mm", "microm", "nm", "mile", "yard", "foot", "inch"};
+        unit.setAdapter(new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, arr));
 
-    @Override
-    public void onClick(View view) {
-        ansA.setBackgroundColor(Color.WHITE);
-        ansB.setBackgroundColor(Color.WHITE);
-        ansC.setBackgroundColor(Color.WHITE);
-        ansD.setBackgroundColor(Color.WHITE);
-        Button clickedButton = (Button) view;
-        if (clickedButton.getId() == R.id.submit_btn) {
-            if (selectedAnswer.equals(QuestionAnswer.correctAnswer[currentQuestionIndex])) {
-                score++;
+        unit.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                update();
             }
-            currentQuestionIndex++;
-            loadNewQuestion();
 
-        } else {
-            //choices button clicked
-            selectedAnswer = clickedButton.getText().toString();
-            clickedButton.setBackgroundColor(Color.MAGENTA);
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
+            }
+        });
+
+        input.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                update();
+            }
+        });
+    }
+
+    private void update() {
+        if (!input.getText().toString().equals("") && !unit.getSelectedItem().toString().equals("")) {
+            double in = Double.parseDouble(input.getText().toString());
+            switch (unit.getSelectedItem().toString()) {
+                case "km":
+                    setKm(in);
+                    break;
+                case "m":
+                    setKm(in / 1000);
+                    break;
+                case "cm":
+                    setKm(in / 100000);
+                    break;
+                case "mm":
+                    setKm(in / 1000000);
+                    break;
+                case "microm":
+                    setKm(in / 1000000000);
+                    break;
+                case "nm":
+                    double d = 10000000 * 1000000;
+                    setKm(in / d);
+                    break;
+                case "mile":
+                    setKm(in * 1.609);
+                    break;
+                case "yard":
+                    setKm(in / 1094);
+                    break;
+                case "foot":
+                    setKm(in / 3281);
+                    break;
+                case "inch":
+                    setKm(in / 39370);
+                    break;
+            }
         }
     }
-    private void loadNewQuestion() {
-        if(currentQuestionIndex == totalQuestion ){
-            finishQuiz();
-            return;
-        }
-        questionTextView.setText(QuestionAnswer.question[currentQuestionIndex]);
-        ansA.setText(QuestionAnswer.choices[currentQuestionIndex][0]);
-        ansB.setText(QuestionAnswer.choices[currentQuestionIndex][1]);
-        ansC.setText(QuestionAnswer.choices[currentQuestionIndex][2]);
-        ansD.setText(QuestionAnswer.choices[currentQuestionIndex][3]);
-    }
 
-    private void finishQuiz() {
-        String passStatus = "";
-        if(score > totalQuestion*0.60){
-            passStatus = "Passed";
-        }else{
-            passStatus = "Failed";
-        }
-        new AlertDialog.Builder(this)
-                .setTitle(passStatus)
-                .setMessage("Score is "+ score+" out of "+ totalQuestion)
-                .setPositiveButton("Restart",(dialogInterface, i) -> restartQuiz() )
-                .setCancelable(false)
-                .show();
-    }
-    void restartQuiz(){
-        score = 0;
-        currentQuestionIndex =0;
-        loadNewQuestion();
+    private void setKm(double km_in) {
+        km.setText(String.valueOf(km_in));
+        m.setText(String.valueOf(km_in * 1000));
+        cm.setText(String.valueOf(km_in * 100000));
+        mm.setText(String.valueOf(km_in * 1000000));
+        microm.setText(String.valueOf(km_in * 1000000000));
+        nm.setText(String.valueOf(km_in * 1000000 * 1000000));
+        mile.setText(String.valueOf(km_in / 1.609));
+        yard.setText(String.valueOf(km_in * 1094));
+        foot.setText(String.valueOf(km_in * 3281));
+        inch.setText(String.valueOf(km_in * 39370));
+
+
     }
 }
-
